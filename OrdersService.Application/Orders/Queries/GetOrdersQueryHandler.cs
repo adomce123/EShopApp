@@ -1,29 +1,35 @@
 ﻿using OrdersService.Application.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using OrdersService.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
+using Dapper;
 
 namespace OrdersService.Application.Orders.Queries
 {
     public class GetOrdersQueryHandler
     {
-        private readonly List<OrderDto> _orders;
+        private readonly OrdersDbContext _context;
 
-        public GetOrdersQueryHandler()
+        public GetOrdersQueryHandler(OrdersDbContext context)
         {
-            // Sample data directly in DTO format
-            _orders = new List<OrderDto>
-            {
-                new OrderDto { Id = 1, TotalPrice = 20.0m },
-                new OrderDto { Id = 2, TotalPrice = 15.0m }
-            };
+            _context = context;
         }
 
-        public IEnumerable<OrderDto> Handle(GetOrdersQuery query)
+        public async Task<IEnumerable<OrderDto>> HandleAsync(GetOrdersQuery query)
         {
-            return _orders;
+            var connection = _context.Database.GetDbConnection();
+
+            if (connection.State == ConnectionState.Closed)
+            {
+                await connection.OpenAsync();
+            }
+
+            string sql = @"SELECT ""Id"", ""TotalPrice"" FROM ""Orders"";";
+
+            // Use Dapper to execute the query
+            var orders = await connection.QueryAsync<OrderDto>(sql);
+
+            return orders;
         }
     }
 }

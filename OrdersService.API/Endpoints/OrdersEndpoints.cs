@@ -4,11 +4,11 @@ namespace OrdersService.API.Endpoints
 {
     public class OrdersEndpoints
     {
-        private readonly GetOrdersQueryHandler _getOrdersQueryHandler;
+        private readonly IServiceProvider _serviceProvider;
 
-        public OrdersEndpoints(GetOrdersQueryHandler getOrdersQueryHandler)
+        public OrdersEndpoints(IServiceProvider serviceProvider)
         {
-            _getOrdersQueryHandler = getOrdersQueryHandler;
+            _serviceProvider = serviceProvider;
         }
 
         public void MapEndpoints(IEndpointRouteBuilder app)
@@ -16,11 +16,14 @@ namespace OrdersService.API.Endpoints
             app.MapGet("/orders", GetAllOrders);
         }
 
-        private IResult GetAllOrders()
+        private async Task<IResult> GetAllOrders()
         {
+            using var scope = _serviceProvider.CreateScope();
+            var handler = scope.ServiceProvider.GetRequiredService<GetOrdersQueryHandler>();
             var query = new GetOrdersQuery();
-            var result = _getOrdersQueryHandler.Handle(query);
+            var result = await handler.HandleAsync(query);
             return Results.Ok(result);
+
         }
     }
 }

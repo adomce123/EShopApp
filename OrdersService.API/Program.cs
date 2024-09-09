@@ -13,7 +13,7 @@ var connectionString = configuration.GetConnectionString("OrdersDBConnection") ?
 services.AddDbContext<OrdersDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-services.AddSingleton<GetOrdersQueryHandler>();
+services.AddScoped<GetOrdersQueryHandler>();
 
 services.AddSingleton<OrdersEndpoints>();
 
