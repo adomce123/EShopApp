@@ -1,21 +1,27 @@
+using Microsoft.EntityFrameworkCore;
 using OrdersService.API.Endpoints;
 using OrdersService.Application.Orders.Queries;
+using OrdersService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
+var configuration = builder.Configuration;
 
-// Add services to the container.
+var connectionString = configuration.GetConnectionString("OrdersDBConnection") ??
+    throw new ArgumentException("Connection string was not specified");
 
-builder.Services.AddSingleton<GetOrdersQueryHandler>();
+services.AddDbContext<OrdersDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
-builder.Services.AddSingleton<OrdersEndpoints>();
+services.AddSingleton<GetOrdersQueryHandler>();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+services.AddSingleton<OrdersEndpoints>();
+
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
