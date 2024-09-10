@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OrdersService.API.Endpoints;
+using OrdersService.Application.Orders.Commands;
 using OrdersService.Application.Orders.Queries;
 using OrdersService.Infrastructure;
 
@@ -14,6 +15,7 @@ services.AddDbContext<OrdersDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 services.AddScoped<GetOrdersQueryHandler>();
+services.AddScoped<CreateOrderCommandHandler>();
 
 services.AddSingleton<OrdersEndpoints>();
 

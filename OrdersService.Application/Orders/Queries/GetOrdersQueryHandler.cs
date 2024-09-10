@@ -1,8 +1,8 @@
-﻿using OrdersService.Application.Dtos;
-using OrdersService.Infrastructure;
+﻿using OrdersService.Infrastructure;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using Dapper;
+using OrdersService.Application.Dtos;
 
 namespace OrdersService.Application.Orders.Queries
 {
@@ -17,7 +17,7 @@ namespace OrdersService.Application.Orders.Queries
 
         public async Task<IEnumerable<OrderDto>> HandleAsync(GetOrdersQuery query)
         {
-            var connection = _context.Database.GetDbConnection();
+            var connection = _context.Database.GetDbConnection(); // Get NpgsqlConnection from DbContext
 
             if (connection.State == ConnectionState.Closed)
             {
@@ -26,8 +26,7 @@ namespace OrdersService.Application.Orders.Queries
 
             string sql = @"SELECT ""Id"", ""TotalPrice"" FROM ""Orders"";";
 
-            // Use Dapper to execute the query
-            var orders = await connection.QueryAsync<OrderDto>(sql);
+            var orders = await connection.QueryAsync<OrderDto>(sql); // Execute query using Dapper
 
             return orders;
         }
