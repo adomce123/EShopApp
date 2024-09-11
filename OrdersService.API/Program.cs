@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using OrdersService.API.Endpoints;
-using OrdersService.Application.Orders.Commands;
 using OrdersService.Application.Orders.Queries;
 using OrdersService.Infrastructure;
 
@@ -14,8 +13,7 @@ var connectionString = configuration.GetConnectionString("OrdersDBConnection") ?
 services.AddDbContext<OrdersDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-services.AddScoped<GetOrdersQueryHandler>();
-services.AddScoped<CreateOrderCommandHandler>();
+services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetOrdersQueryHandler).Assembly));
 
 services.AddSingleton<OrdersEndpoints>();
 
@@ -33,4 +31,4 @@ if (app.Environment.IsDevelopment())
 var ordersEndpoints = app.Services.GetRequiredService<OrdersEndpoints>();
 ordersEndpoints.MapEndpoints(app);
 
-app.Run();
+await app.RunAsync();

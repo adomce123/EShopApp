@@ -1,12 +1,13 @@
-﻿using OrdersService.Infrastructure;
+﻿using MediatR;
+using OrdersService.Infrastructure;
+using OrdersService.Application.Dtos;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using OrdersService.Application.Dtos;
 
 namespace OrdersService.Application.Orders.Queries
 {
-    public class GetOrdersQueryHandler
+    public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, IEnumerable<OrderDto>>
     {
         private readonly OrdersDbContext _context;
 
@@ -15,19 +16,17 @@ namespace OrdersService.Application.Orders.Queries
             _context = context;
         }
 
-        public async Task<IEnumerable<OrderDto>> HandleAsync(GetOrdersQuery query)
+        public async Task<IEnumerable<OrderDto>> Handle(GetOrdersQuery query, CancellationToken cancellationToken)
         {
-            var connection = _context.Database.GetDbConnection(); // Get NpgsqlConnection from DbContext
+            var connection = _context.Database.GetDbConnection();
 
             if (connection.State == ConnectionState.Closed)
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
             }
 
             string sql = @"SELECT ""Id"", ""TotalPrice"" FROM ""Orders"";";
-
             var orders = await connection.QueryAsync<OrderDto>(sql); // Execute query using Dapper
-
             return orders;
         }
     }

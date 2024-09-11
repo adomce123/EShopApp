@@ -1,4 +1,9 @@
-﻿namespace OrdersService.Application.Orders.Queries
+﻿using MediatR;
+using OrdersService.Application.Dtos;
+
+namespace OrdersService.Application.Orders.Queries
 {
-    public record GetOrdersQuery();
+    public class GetOrdersQuery : IRequest<IEnumerable<OrderDto>>
+    {
+    }
 }

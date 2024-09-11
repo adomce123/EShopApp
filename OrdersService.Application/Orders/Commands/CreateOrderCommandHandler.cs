@@ -1,11 +1,12 @@
-﻿using OrdersService.Infrastructure;
+﻿using MediatR;
+using OrdersService.Infrastructure;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 
 namespace OrdersService.Application.Orders.Commands
 {
-    public class CreateOrderCommandHandler
+    public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int>
     {
         private readonly OrdersDbContext _context;
 
@@ -14,13 +15,13 @@ namespace OrdersService.Application.Orders.Commands
             _context = context;
         }
 
-        public async Task<int> HandleAsync(CreateOrderCommand command)
+        public async Task<int> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
         {
-            var connection = _context.Database.GetDbConnection(); // Get NpgsqlConnection from DbContext
+            var connection = _context.Database.GetDbConnection();
 
             if (connection.State == ConnectionState.Closed)
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
             }
 
             string sql = @"
@@ -28,10 +29,11 @@ namespace OrdersService.Application.Orders.Commands
                 VALUES (@CustomerId, @TotalPrice, @OrderDate)
                 RETURNING ""Id"";";
 
-            var orderId = await connection.ExecuteScalarAsync<int>(sql, new
+            // Execute query using Dapper
+            var orderId = await connection.ExecuteScalarAsync<int>(sql, new 
             {
-                CustomerId = command.CustomerId,
-                TotalPrice = command.TotalPrice,
+                command.CustomerId,
+                command.TotalPrice,
                 OrderDate = DateTime.UtcNow
             });
 
