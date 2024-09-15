@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrdersService.API", "Orders
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrdersService.Application", "OrdersService.Application\OrdersService.Application.csproj", "{225FC6C5-1C4B-45B4-A4A6-34EC72B395F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdersService.Infrastructure", "OrdersService.Infrastructure\OrdersService.Infrastructure.csproj", "{BEBF6C18-6631-4E15-8D32-5B3223FE9785}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrdersService.Infrastructure", "OrdersService.Infrastructure\OrdersService.Infrastructure.csproj", "{BEBF6C18-6631-4E15-8D32-5B3223FE9785}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdersService.Domain", "OrdersService.Domain\OrdersService.Domain.csproj", "{898E7B1A-35D1-4485-8919-70ABDEDECFD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrdersService.Domain", "OrdersService.Domain\OrdersService.Domain.csproj", "{898E7B1A-35D1-4485-8919-70ABDEDECFD6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdersService.Tests", "OrdersService.Tests\OrdersService.Tests.csproj", "{D9CF7E82-D618-4AC8-A9C4-3CDE0CEF37DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{898E7B1A-35D1-4485-8919-70ABDEDECFD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{898E7B1A-35D1-4485-8919-70ABDEDECFD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{898E7B1A-35D1-4485-8919-70ABDEDECFD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9CF7E82-D618-4AC8-A9C4-3CDE0CEF37DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9CF7E82-D618-4AC8-A9C4-3CDE0CEF37DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9CF7E82-D618-4AC8-A9C4-3CDE0CEF37DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9CF7E82-D618-4AC8-A9C4-3CDE0CEF37DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OrdersService.API.Endpoints;
+using OrdersService.Application.Orders.Interfaces;
 using OrdersService.Application.Orders.Queries;
 using OrdersService.Infrastructure;
 
@@ -16,6 +17,7 @@ services.AddDbContext<OrdersDbContext>(options =>
 services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetOrdersQueryHandler).Assembly));
 
 services.AddSingleton<OrdersEndpoints>();
+services.AddScoped<IOrderRepository, OrderRepository>();
 
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();

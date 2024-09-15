@@ -1,33 +1,29 @@
-﻿using MediatR;
-using OrdersService.Infrastructure;
-using OrdersService.Application.Dtos;
-using Dapper;
-using Microsoft.EntityFrameworkCore;
-using System.Data;
+﻿using OrdersService.Application.Dtos;
+using MediatR;
+using OrdersService.Application.Orders.Interfaces;
 
 namespace OrdersService.Application.Orders.Queries
 {
     public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, IEnumerable<OrderDto>>
     {
-        private readonly OrdersDbContext _context;
+        private readonly IOrderRepository _orderRepository;
 
-        public GetOrdersQueryHandler(OrdersDbContext context)
+        public GetOrdersQueryHandler(IOrderRepository orderRepository)
         {
-            _context = context;
+            _orderRepository = orderRepository;
         }
 
         public async Task<IEnumerable<OrderDto>> Handle(GetOrdersQuery query, CancellationToken cancellationToken)
         {
-            var connection = _context.Database.GetDbConnection();
+            var orders = await _orderRepository.GetOrdersAsync();
 
-            if (connection.State == ConnectionState.Closed)
+            return orders.Select(order => new OrderDto
             {
-                await connection.OpenAsync(cancellationToken);
-            }
-
-            string sql = @"SELECT ""Id"", ""TotalPrice"" FROM ""Orders"";";
-            var orders = await connection.QueryAsync<OrderDto>(sql); // Execute query using Dapper
-            return orders;
+                Id = order.Id,
+                TotalPrice = order.TotalPrice,
+                OrderDate = order.OrderDate,
+                CustomerId = order.CustomerId
+            });
         }
     }
 }
