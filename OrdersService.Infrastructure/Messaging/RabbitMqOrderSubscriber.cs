@@ -3,20 +3,26 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using OrdersService.Application.Messaging;
+using Microsoft.Extensions.Logging;
 
 namespace OrdersService.Infrastructure.Messaging
 {
     public class RabbitMqOrderSubscriber : IMessageSubscriber, IDisposable
     {
         private readonly RabbitMqSettings _rabbitMqSettings;
+        private readonly ILogger<RabbitMqOrderSubscriber> _logger;
         private readonly IOrderMessageHandler _orderMessageHandler;
         private readonly IConnection _connection;
         private readonly IModel _channel;
         private bool _disposed;
 
-        public RabbitMqOrderSubscriber(IOptions<RabbitMqSettings> rabbitMqSettings, IOrderMessageHandler orderMessageHandler)
+        public RabbitMqOrderSubscriber(
+            ILogger<RabbitMqOrderSubscriber> logger,
+            IOptions<RabbitMqSettings> rabbitMqSettings, 
+            IOrderMessageHandler orderMessageHandler)
         {
             _rabbitMqSettings = rabbitMqSettings.Value;
+            _logger = logger;
             _orderMessageHandler = orderMessageHandler;
 
             var factory = new ConnectionFactory()
@@ -53,7 +59,7 @@ namespace OrdersService.Infrastructure.Messaging
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error processing message: {ex.Message}");
+                    _logger.LogError(ex, "Error processing message: {Message}", ex.Message);
                 }
             };
 
