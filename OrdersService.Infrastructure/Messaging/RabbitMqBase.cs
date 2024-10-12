@@ -4,7 +4,7 @@ using OrdersService.Infrastructure.Messaging.Settings;
 
 namespace OrdersService.Infrastructure.Messaging
 {
-    public abstract class RabbitMqBase
+    public abstract class RabbitMqBase : IDisposable
     {
         protected readonly RabbitMqSettings _rabbitMqSettings;
         protected readonly IConnection _connection;
