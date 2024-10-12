@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OrdersService.API.Endpoints;
 using OrdersService.Application.Messaging;
 using OrdersService.Application.Orders;
@@ -7,6 +8,7 @@ using OrdersService.Application.Orders.Queries;
 using OrdersService.Infrastructure;
 using OrdersService.Infrastructure.Data;
 using OrdersService.Infrastructure.Messaging;
+using OrdersService.Infrastructure.Messaging.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -22,7 +24,9 @@ services.AddDbContext<OrdersDbContext>(options =>
 
 services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetOrdersQueryHandler).Assembly));
 
-services.AddSingleton<IMessageSubscriber, RabbitMqOrderSubscriber>();
+services.AddSingleton<IMessageSubscriber, RabbitMqSubscriber>();
+services.AddSingleton<IMessageProducer, RabbitMqProducer>();
+
 services.AddSingleton<IOrderMessageHandler, OrderMessageHandler>();
 services.AddSingleton<OrdersEndpoints>();
 services.AddScoped<IOrderRepository, OrderRepository>();
@@ -41,9 +45,13 @@ if (app.Environment.IsDevelopment())
 var ordersEndpoints = app.Services.GetRequiredService<OrdersEndpoints>();
 ordersEndpoints.MapEndpoints(app);
 
+var rabbitMqSettings = app.Services.GetRequiredService<IOptions<RabbitMqSettings>>().Value;
 
-// Start consuming messages
-var subscriber = app.Services.GetRequiredService<IMessageSubscriber>();
-subscriber.Subscribe();  // This starts the RabbitMQ listener
+var messageSubscriber = app.Services.GetRequiredService<IMessageSubscriber>();
+
+var orderMessageHandler = app.Services.GetRequiredService<IOrderMessageHandler>();
+messageSubscriber.Subscribe(rabbitMqSettings.OrderQueueName, orderMessageHandler.HandleMessageAsync);
+
+messageSubscriber.Subscribe(rabbitMqSettings.ProductInfoQueueName, orderMessageHandler.HandleMessageAsync);
 
 await app.RunAsync();

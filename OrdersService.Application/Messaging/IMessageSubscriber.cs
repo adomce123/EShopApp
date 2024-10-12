@@ -2,6 +2,6 @@
 {
     public interface IMessageSubscriber
     {
-        void Subscribe();
+        void Subscribe(string queueName, Func<string, Task> messageHandler);
     }
 }

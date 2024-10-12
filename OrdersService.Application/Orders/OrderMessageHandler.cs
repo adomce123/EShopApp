@@ -14,10 +14,7 @@ namespace OrdersService.Application.Orders
 
         public async Task HandleMessageAsync(string message)
         {
-            await Task.Run(() =>
-            {
-                _logger.LogInformation("Processing order message: {Message}", message);
-            });
+            _logger.LogInformation("Processing order message: {Message}", message);
         }
     }
 }
