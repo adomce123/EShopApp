@@ -6,5 +6,6 @@ namespace OrdersService.Application.Orders.Commands
     {
         public int CustomerId { get; set; }
         public decimal TotalPrice { get; set; }
+        public int[] ProductIds { get; set; } = Array.Empty<int>();
     }
 }

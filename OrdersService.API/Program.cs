@@ -1,13 +1,11 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OrdersService.API.Endpoints;
-using OrdersService.Application.Messaging;
-using OrdersService.Application.Orders;
 using OrdersService.Application.Orders.Interfaces;
 using OrdersService.Application.Orders.Queries;
+using OrdersService.Application.Orders.StateMachines.States;
 using OrdersService.Infrastructure;
 using OrdersService.Infrastructure.Data;
-using OrdersService.Infrastructure.Messaging;
 using OrdersService.Infrastructure.Messaging.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,10 +22,27 @@ services.AddDbContext<OrdersDbContext>(options =>
 
 services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetOrdersQueryHandler).Assembly));
 
-services.AddSingleton<IMessageSubscriber, RabbitMqSubscriber>();
-services.AddSingleton<IMessageProducer, RabbitMqProducer>();
+services.AddMassTransit(x =>
+{
+    // Register the OrderStateMachine and its state in the saga
+    x.AddSagaStateMachine<OrderStateMachine, OrderState>()
+        .InMemoryRepository(); // Redis can be used
 
-services.AddSingleton<IOrderMessageHandler, OrderMessageHandler>();
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+        // Receive endpoint for the saga, listens for saga-related messages (like ProductValidated)
+        cfg.ReceiveEndpoint("ordersQueue", e =>
+        {
+            e.ConfigureSaga<OrderState>(context);  // This will handle ProductValidated and other events related to the saga
+        });
+    });
+});
+
 services.AddSingleton<OrdersEndpoints>();
 services.AddScoped<IOrderRepository, OrderRepository>();
 
@@ -44,14 +59,5 @@ if (app.Environment.IsDevelopment())
 
 var ordersEndpoints = app.Services.GetRequiredService<OrdersEndpoints>();
 ordersEndpoints.MapEndpoints(app);
-
-var rabbitMqSettings = app.Services.GetRequiredService<IOptions<RabbitMqSettings>>().Value;
-
-var messageSubscriber = app.Services.GetRequiredService<IMessageSubscriber>();
-
-var orderMessageHandler = app.Services.GetRequiredService<IOrderMessageHandler>();
-messageSubscriber.Subscribe(rabbitMqSettings.OrderQueueName, orderMessageHandler.HandleMessageAsync);
-
-messageSubscriber.Subscribe(rabbitMqSettings.ProductInfoQueueName, orderMessageHandler.HandleMessageAsync);
 
 await app.RunAsync();
