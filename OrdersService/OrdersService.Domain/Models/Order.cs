@@ -7,6 +7,6 @@
         public int CustomerId { get; set; }
         public decimal TotalPrice { get; set; }
         // Navigation property to represent the relationship with OrderDetails
-        public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        public IEnumerable<OrderDetail> OrderDetails { get; set; } = Enumerable.Empty<OrderDetail>();
     }
 }

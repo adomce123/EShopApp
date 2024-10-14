@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OrdersService.API.Endpoints;
 using OrdersService.Application.Orders.Interfaces;
 using OrdersService.Application.Orders.Queries;
+using OrdersService.Application.Orders.StateMachines;
 using OrdersService.Infrastructure;
 using OrdersService.Infrastructure.Data;
 using OrdersService.Infrastructure.Messaging.Settings;

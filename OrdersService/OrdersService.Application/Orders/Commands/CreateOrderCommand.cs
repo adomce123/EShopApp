@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using OrdersService.Domain.Models;
 
 namespace OrdersService.Application.Orders.Commands
 {
@@ -6,6 +7,6 @@ namespace OrdersService.Application.Orders.Commands
     {
         public int CustomerId { get; set; }
         public decimal TotalPrice { get; set; }
-        public int[] ProductIds { get; set; } = Array.Empty<int>();
+        public IEnumerable<OrderDetail> OrderDetails { get; set; } = Array.Empty<OrderDetail>();
     }
 }

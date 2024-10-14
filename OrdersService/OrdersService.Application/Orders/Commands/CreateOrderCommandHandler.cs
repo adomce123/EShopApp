@@ -14,18 +14,19 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int
 
     public async Task<int> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
-        var orderId = new Random().Next(1000, 9999);
+        var random = new Random();
+        int orderId = random.Next(0, 10000);
 
         var orderCreated = new OrderCreated
         {
             OrderId = orderId,
-            ProductIds = command.ProductIds
+            OrderDetails = command.OrderDetails
         };
 
         // Publish the OrderCreated event to trigger the saga
         await _publishEndpoint.Publish(orderCreated, cancellationToken);
 
-        Console.WriteLine($"Order service published OrderCreated event with corr id : {orderCreated.CorrelationId}");
+        Console.WriteLine($"Order service published OrderCreated event with order id : {orderId}");
 
         // Return the Order ID immediately to the client (while the saga runs in the background)
         return orderId;

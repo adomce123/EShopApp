@@ -16,7 +16,9 @@ namespace ProductsService.Infrastructure.Repositories
 
         public async Task<IEnumerable<Product>> GetAll()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Products
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<Product?> GetSingleById(int id)
@@ -24,6 +26,14 @@ namespace ProductsService.Infrastructure.Repositories
             return await _context.Products
                 .AsNoTracking()
                 .SingleOrDefaultAsync(p => p.ProductId == id);
+        }
+
+        public async Task<IEnumerable<Product>> GetByIdsAsync(IEnumerable<int> requestedProductIds)
+        {
+            return await _context.Products
+                .AsNoTracking()
+                .Where(p => requestedProductIds.Contains(p.ProductId))
+                .ToListAsync();
         }
 
         public async Task<Product> Create(Product entity)
@@ -42,6 +52,20 @@ namespace ProductsService.Infrastructure.Repositories
             await _context.SaveChangesAsync();
 
             return entity;
+        }
+
+        public async Task UpdateProductQuantitiesAsync(Dictionary<int, int> productQuantities)
+        {
+            foreach (var productQuantity in productQuantities)
+            {
+                var product = await GetSingleById(productQuantity.Key);
+                if (product != null)
+                {
+                    product.StockQuantity -= productQuantity.Value;
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task Delete(Product entity)

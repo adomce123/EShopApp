@@ -1,17 +1,24 @@
 ﻿using MassTransit;
+using MassTransit.Mediator;
 using Messaging.MassTransit.Events;
 using Messaging.MassTransit.States;
+using Microsoft.Extensions.Logging;
+using OrdersService.Application.Orders.Commands;
+
+namespace OrdersService.Application.Orders.StateMachines;
 
 public class OrderStateMachine : MassTransitStateMachine<OrderState>
 {
+    private readonly IMediator _mediator;
     public State ProductRequested { get; private set; }
     public State OrderCompleted { get; private set; }
-
     public Event<OrderCreated> OrderCreated { get; private set; }
     public Event<ProductValidated> ProductValidated { get; private set; }
 
-    public OrderStateMachine()
+    public OrderStateMachine(ILogger<OrderStateMachine> logger, IMediator mediator)
     {
+        _mediator = mediator;
+
         // Mapping the instance state to a property to track state transitions
         InstanceState(x => x.CurrentState);
 
@@ -27,35 +34,43 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                     context.Instance.OrderId = context.Data.OrderId;
                     context.Instance.Created = DateTime.UtcNow;
 
-                    Console.WriteLine($"Order {context.Data.OrderId} created. Product check initiated.");
+                    logger.LogInformation("Order {OrderId} received, with product ids: {ProductIds}. Product check initiated.", 
+                        context.Data.OrderId, string.Join(", ", context.Data.OrderDetails.Select(od => od.ProductId)));
                 })
                 .TransitionTo(ProductRequested)
                 .PublishAsync(context =>
                 {
-                    Console.WriteLine($"Publishing ProductRequest for OrderId: {context.Instance.OrderId}");
+                    logger.LogInformation($"Publishing ProductRequest for OrderId: {context.Instance.OrderId}");
 
                     // Publish a ProductRequest event to request product details
                     return context.Init<ProductRequest>(new
                     {
                         OrderId = context.Instance.OrderId,
-                        ProductIds = context.Data.ProductIds
+                        OrderDetails = context.Data.OrderDetails
                     });
                 })
                 .Then(context =>
                 {
-                    Console.WriteLine($"ProductRequest for OrderId {context.Instance.OrderId} published.");
+                    logger.LogInformation($"ProductRequest for OrderId {context.Instance.OrderId} published.");
                 })
         );
 
         During(ProductRequested,
             When(ProductValidated)
-                .Then(context =>
+                .ThenAsync(async context =>
                 {
-                    Console.WriteLine($"Saga is in state: {context.Instance.CurrentState}");
-                    Console.WriteLine("ProductValidated event received.");
-                    // Order processing is completed after product validation
-                    context.Instance.Completed = DateTime.UtcNow;
-                    Console.WriteLine($"Order {context.Instance.OrderId} completed after product validation.");
+                    logger.LogInformation($"Saga is in state: {context.Instance.CurrentState}");
+                    logger.LogInformation("Order {OrderId} validated. Valid product ids: {Ids}",
+                        context.Data.OrderId, string.Join(", ", context.Data.OrderDetails.Select(od => od.ProductId)));
+                    logger.LogInformation($"Order {context.Instance.OrderId} will be sent for persistance.");
+
+                    var insertOrderCommand = new InsertOrderCommand
+                    {
+                        OrderId = context.Instance.OrderId,
+                        OrderDetails = context.Data.OrderDetails
+                    };
+
+                    await _mediator.Send(insertOrderCommand);
                 })
                 .TransitionTo(OrderCompleted)
         );
