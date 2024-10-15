@@ -1,23 +1,27 @@
 ﻿using MassTransit;
-using MassTransit.Mediator;
 using Messaging.MassTransit.Events;
 using Messaging.MassTransit.States;
 using Microsoft.Extensions.Logging;
 using OrdersService.Application.Orders.Commands;
+using Microsoft.Extensions.DependencyInjection;
+using MediatR;
 
 namespace OrdersService.Application.Orders.StateMachines;
 
 public class OrderStateMachine : MassTransitStateMachine<OrderState>
 {
-    private readonly IMediator _mediator;
+    private readonly MediatR.IMediator _mediator;
+    private readonly IServiceProvider _serviceProvider;
+
     public State ProductRequested { get; private set; }
     public State OrderCompleted { get; private set; }
     public Event<OrderCreated> OrderCreated { get; private set; }
     public Event<ProductValidated> ProductValidated { get; private set; }
 
-    public OrderStateMachine(ILogger<OrderStateMachine> logger, IMediator mediator)
+    public OrderStateMachine(ILogger<OrderStateMachine> logger, MediatR.IMediator mediator, IServiceProvider serviceProvider)
     {
         _mediator = mediator;
+        _serviceProvider = serviceProvider;
 
         // Mapping the instance state to a property to track state transitions
         InstanceState(x => x.CurrentState);
@@ -64,13 +68,16 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                         context.Data.OrderId, string.Join(", ", context.Data.OrderDetails.Select(od => od.ProductId)));
                     logger.LogInformation($"Order {context.Instance.OrderId} will be sent for persistance.");
 
-                    var insertOrderCommand = new InsertOrderCommand
+                    using var scope = _serviceProvider.CreateScope();
+                    var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+                    var orderReadyForInsert = new InsertOrderCommand
                     {
                         OrderId = context.Instance.OrderId,
                         OrderDetails = context.Data.OrderDetails
                     };
 
-                    await _mediator.Send(insertOrderCommand);
+                    await mediator.Send(orderReadyForInsert);
                 })
                 .TransitionTo(OrderCompleted)
         );

@@ -24,7 +24,6 @@ namespace ProductsService.Infrastructure.Repositories
         public async Task<Product?> GetSingleById(int id)
         {
             return await _context.Products
-                .AsNoTracking()
                 .SingleOrDefaultAsync(p => p.ProductId == id);
         }
 

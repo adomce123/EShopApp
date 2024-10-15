@@ -14,11 +14,15 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int
 
     public async Task<int> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
+        // Generate a new Guid to act as the CorrelationId for each new order
+        var correlationId = Guid.NewGuid();
+
         var random = new Random();
         int orderId = random.Next(0, 10000);
 
         var orderCreated = new OrderCreated
         {
+            CorrelationId = correlationId,
             OrderId = orderId,
             OrderDetails = command.OrderDetails
         };
