@@ -7,7 +7,6 @@ using OrdersService.Application.Orders.Queries;
 using OrdersService.Application.Orders.StateMachines;
 using OrdersService.Infrastructure;
 using OrdersService.Infrastructure.Data;
-using OrdersService.Infrastructure.Messaging.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -15,8 +14,6 @@ var configuration = builder.Configuration;
 
 var connectionString = configuration.GetConnectionString("OrdersDBConnection") ??
     throw new ArgumentException("Connection string was not specified");
-
-services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
 
 services.AddDbContext<OrdersDbContext>(options =>
     options.UseNpgsql(connectionString));

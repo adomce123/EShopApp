@@ -1,17 +1,16 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using OrdersService.Application.Orders.Commands;
 using OrdersService.Application.Orders.Interfaces;
 using OrdersService.Domain.Models;
 
-namespace OrdersService.Application.Orders
+namespace OrdersService.Application.Orders.Commands
 {
-    public class OrderInsertHandler : IRequestHandler<InsertOrderCommand, Unit>
+    public class OrderInsertCommandHandler : IRequestHandler<InsertOrderCommand, Unit>
     {
-        private readonly ILogger<OrderInsertHandler> _logger;
+        private readonly ILogger<OrderInsertCommandHandler> _logger;
         private readonly IOrderRepository _orderRepository;
 
-        public OrderInsertHandler(ILogger<OrderInsertHandler> logger, IOrderRepository orderRepository)
+        public OrderInsertCommandHandler(ILogger<OrderInsertCommandHandler> logger, IOrderRepository orderRepository)
         {
             _logger = logger;
             _orderRepository = orderRepository;

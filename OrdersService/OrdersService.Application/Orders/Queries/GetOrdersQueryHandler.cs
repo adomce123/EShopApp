@@ -1,6 +1,6 @@
-﻿using OrdersService.Application.Dtos;
-using MediatR;
+﻿using MediatR;
 using OrdersService.Application.Orders.Interfaces;
+using OrdersService.Application.Orders.Dtos;
 
 namespace OrdersService.Application.Orders.Queries
 {

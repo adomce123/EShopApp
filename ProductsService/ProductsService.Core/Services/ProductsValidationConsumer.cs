@@ -7,12 +7,12 @@ using OrdersService.Domain.Models;
 
 namespace ProductsService.Core.Services
 {
-    public class ProductRequestConsumer : IConsumer<ProductsValidationRequested>
+    public class ProductsValidationConsumer : IConsumer<ProductsValidationRequested>
     {
-        private readonly ILogger<ProductRequestConsumer> _logger;
+        private readonly ILogger<ProductsValidationConsumer> _logger;
         private readonly IProductsRepository _productsRepository;
 
-        public ProductRequestConsumer(ILogger<ProductRequestConsumer> logger, IProductsRepository productsRepository)
+        public ProductsValidationConsumer(ILogger<ProductsValidationConsumer> logger, IProductsRepository productsRepository)
         {
             _logger = logger;
             _productsRepository = productsRepository;

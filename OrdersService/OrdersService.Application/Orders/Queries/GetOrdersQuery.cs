@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using OrdersService.Application.Dtos;
+using OrdersService.Application.Orders.Dtos;
 
 namespace OrdersService.Application.Orders.Queries
 {

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProductsService.Extensions;
 using ProductsService.Infrastructure.EntityFrameworkCore;
-using ProductsService.Infrastructure.Messaging.Settings;
 using ProductsService.Infrastructure.Repositories;
 using ProductsService.Infrastructure.Repositories.Interfaces;
 using ProductsService.Core.Services.Interfaces;
@@ -15,14 +14,12 @@ var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("ProductsServiceDb") ??
     throw new ArgumentException("Connection string was not specified");
 
-services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
-
 services.AddDbContext<ProductsDbContext>(
     opt => opt.UseSqlServer(connectionString));
 
 services.AddMassTransit(x =>
 {
-    x.AddConsumer<ProductRequestConsumer>(); // Register the consumer for ProductRequest
+    x.AddConsumer<ProductsValidationConsumer>(); // Register the consumer for ProductRequest
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -34,7 +31,7 @@ services.AddMassTransit(x =>
         // ProductService listens to the product-service-requests queue for ProductRequest messages
         cfg.ReceiveEndpoint("product-service-requests", e =>
         {
-            e.ConfigureConsumer<ProductRequestConsumer>(context);
+            e.ConfigureConsumer<ProductsValidationConsumer>(context);
         });
     });
 });
