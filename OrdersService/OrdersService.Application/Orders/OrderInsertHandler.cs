@@ -27,7 +27,7 @@ namespace OrdersService.Application.Orders
                 OrderDetails = request.OrderDetails,
             };
 
-            await _orderRepository.CreateOrderAsync(orderToInsert); // use canc token
+            await _orderRepository.CreateOrderAsync(orderToInsert, cancellationToken);
 
             _logger.LogInformation("Order was inserted to database with order id: {Id}", request.OrderId);
 

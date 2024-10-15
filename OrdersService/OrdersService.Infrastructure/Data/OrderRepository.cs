@@ -19,11 +19,11 @@ public class OrderRepository : IOrderRepository
         _logger = logger;
     }
 
-    private async Task EnsureConnectionOpenAsync()
+    private async Task EnsureConnectionOpenAsync(CancellationToken cancellationToken = default)
     {
         if (_connection.State == ConnectionState.Closed)
         {
-            await _connection.OpenAsync();
+            await _connection.OpenAsync(cancellationToken);
         }
     }
 
@@ -32,14 +32,14 @@ public class OrderRepository : IOrderRepository
         await EnsureConnectionOpenAsync();
 
         string sql = @"SELECT ""Id"", ""TotalPrice"" FROM ""Orders"";";
-        return await _connection.QueryAsync<Order>(sql);  // Query via Dapper
+        return await _connection.QueryAsync<Order>(sql);
     }
 
-    public async Task CreateOrderAsync(Order orderToCreate)
+    public async Task CreateOrderAsync(Order orderToCreate, CancellationToken cancellationToken)
     {
-        await EnsureConnectionOpenAsync();
+        await EnsureConnectionOpenAsync(cancellationToken);
 
-        await using var transaction = await _connection.BeginTransactionAsync();
+        await using var transaction = await _connection.BeginTransactionAsync(cancellationToken);
 
         try
         {
@@ -72,13 +72,12 @@ public class OrderRepository : IOrderRepository
                 }, transaction);
             }
 
-            await transaction.CommitAsync();
+            await transaction.CommitAsync(cancellationToken);
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            await transaction.RollbackAsync(cancellationToken);
             _logger.LogError(ex, "Transaction failed and was rollbacked while inserting order with id: {Id}", orderToCreate.Id);
-            throw;
         }
     }
 }

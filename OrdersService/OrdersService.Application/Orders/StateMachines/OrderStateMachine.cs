@@ -14,10 +14,10 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     private readonly MediatR.IMediator _mediator;
     private readonly IServiceProvider _serviceProvider;
 
-    public State ProductRequested { get; private set; }
-    public State OrderCompleted { get; private set; }
-    public Event<OrderCreated> OrderCreated { get; private set; }
-    public Event<ProductValidated> ProductValidated { get; private set; }
+    public State ProductRequestedState { get; private set; }
+    public State OrderCompletedState { get; private set; }
+    public Event<OrderCreated> OrderCreatedEvent { get; private set; }
+    public Event<ProductValidated> ProductValidatedEvent { get; private set; }
 
     public OrderStateMachine(ILogger<OrderStateMachine> logger, MediatR.IMediator mediator, IServiceProvider serviceProvider)
     {
@@ -28,12 +28,11 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         InstanceState(x => x.CurrentState);
 
         // Correlating events with the CorrelationId to manage saga lifecycle
-        Event(() => OrderCreated, x => x.CorrelateById(context => context.Message.CorrelationId));
-        Event(() => ProductValidated, x => x.CorrelateById(context => context.Message.CorrelationId));
+        Event(() => OrderCreatedEvent, x => x.CorrelateById(context => context.Message.CorrelationId));
+        Event(() => ProductValidatedEvent, x => x.CorrelateById(context => context.Message.CorrelationId));
 
-        // Defining the initial state when OrderCreated event occurs
         Initially(
-            When(OrderCreated)
+            When(OrderCreatedEvent)
                 .Then(context =>
                 {
                     context.Instance.OrderId = context.Data.OrderId;
@@ -42,11 +41,11 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                     logger.LogInformation("Products check initiated for order {OrderId}, with product ids: {ProductIds}",
                         context.Data.OrderId, string.Join(", ", context.Data.OrderDetails.Select(od => od.ProductId)));
                 })
-                .TransitionTo(ProductRequested) // what happens here ?
-                .PublishAsync(context =>
+                .TransitionTo(ProductRequestedState)
+                .PublishAsync(async context =>
                 {
                     logger.LogWithOrderAndCorrelationIds("Publishing ProductRequested event for", context.Data.OrderId, context.Instance.CorrelationId);
-                    return context.Init<ProductRequest>(new
+                    return await context.Init<ProductRequest>(new
                     {
                         context.Instance.CorrelationId,
                         context.Data.OrderId,
@@ -55,8 +54,8 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 })
         );
 
-        During(ProductRequested,
-            When(ProductValidated)
+        During(ProductRequestedState,
+            When(ProductValidatedEvent)
                 .ThenAsync(async context =>
                 {
                     logger.LogWithOrderAndCorrelationIds("Received ProductValidated event for", context.Instance.OrderId, context.Instance.CorrelationId);
@@ -74,7 +73,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 
                     await mediator.Send(orderReadyForInsert);
                 })
-                .TransitionTo(OrderCompleted)
+                .TransitionTo(OrderCompletedState)
         );
 
         SetCompletedWhenFinalized();
