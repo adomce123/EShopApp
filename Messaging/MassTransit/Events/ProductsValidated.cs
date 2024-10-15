@@ -2,7 +2,7 @@
 
 namespace Messaging.MassTransit.Events
 {
-    public class ProductValidated
+    public class ProductsValidated
     {
         public Guid CorrelationId { get; set; }
         public int OrderId { get; set; }

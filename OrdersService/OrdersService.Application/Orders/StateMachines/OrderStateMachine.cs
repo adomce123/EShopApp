@@ -16,7 +16,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     public State? ProductRequestedState { get; }
     public State? OrderCompletedState { get; }
     public Event<OrderCreated>? OrderCreatedEvent { get; }
-    public Event<ProductValidated>? ProductValidatedEvent { get; }
+    public Event<ProductsValidated>? ProductsValidatedEvent { get; }
 
     public OrderStateMachine(ILogger<OrderStateMachine> logger, IServiceProvider serviceProvider)
     {
@@ -27,7 +27,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 
         // Correlating events with the CorrelationId to manage saga lifecycle
         Event(() => OrderCreatedEvent, x => x.CorrelateById(context => context.Message.CorrelationId));
-        Event(() => ProductValidatedEvent, x => x.CorrelateById(context => context.Message.CorrelationId));
+        Event(() => ProductsValidatedEvent, x => x.CorrelateById(context => context.Message.CorrelationId));
 
         Initially(
             When(OrderCreatedEvent)
@@ -43,7 +43,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 .PublishAsync(async context =>
                 {
                     logger.LogWithOrderAndCorrelationIds("Publishing ProductRequested event for", context.Message.OrderId, context.Saga.CorrelationId);
-                    return await context.Init<ProductRequest>(new
+                    return await context.Init<ProductsValidationRequested>(new
                     {
                         context.Saga.CorrelationId,
                         context.Message.OrderId,
@@ -53,7 +53,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         );
 
         During(ProductRequestedState,
-            When(ProductValidatedEvent)
+            When(ProductsValidatedEvent)
                 .ThenAsync(async context =>
                 {
                     logger.LogWithOrderAndCorrelationIds("Received ProductValidated event for", context.Saga.OrderId, context.Saga.CorrelationId);

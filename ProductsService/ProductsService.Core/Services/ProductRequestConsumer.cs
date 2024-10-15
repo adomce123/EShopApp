@@ -7,7 +7,7 @@ using OrdersService.Domain.Models;
 
 namespace ProductsService.Core.Services
 {
-    public class ProductRequestConsumer : IConsumer<ProductRequest>
+    public class ProductRequestConsumer : IConsumer<ProductsValidationRequested>
     {
         private readonly ILogger<ProductRequestConsumer> _logger;
         private readonly IProductsRepository _productsRepository;
@@ -18,7 +18,7 @@ namespace ProductsService.Core.Services
             _productsRepository = productsRepository;
         }
 
-        public async Task Consume(ConsumeContext<ProductRequest> context)
+        public async Task Consume(ConsumeContext<ProductsValidationRequested> context)
         {
             var message = context.Message;
             _logger.LogWithOrderAndCorrelationIds("Received ProductRequest message for", message.OrderId, message.CorrelationId);
@@ -44,7 +44,7 @@ namespace ProductsService.Core.Services
                 _logger.LogError(ex, "Failed to process ProductRequest");
             }
 
-            await context.Publish(new ProductValidated
+            await context.Publish(new ProductsValidated
             {
                 CorrelationId = message.CorrelationId,
                 OrderId = message.OrderId,
