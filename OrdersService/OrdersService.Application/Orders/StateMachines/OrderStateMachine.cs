@@ -11,17 +11,15 @@ namespace OrdersService.Application.Orders.StateMachines;
 
 public class OrderStateMachine : MassTransitStateMachine<OrderState>
 {
-    private readonly MediatR.IMediator _mediator;
     private readonly IServiceProvider _serviceProvider;
 
-    public State ProductRequestedState { get; private set; }
-    public State OrderCompletedState { get; private set; }
-    public Event<OrderCreated> OrderCreatedEvent { get; private set; }
-    public Event<ProductValidated> ProductValidatedEvent { get; private set; }
+    public State? ProductRequestedState { get; }
+    public State? OrderCompletedState { get; }
+    public Event<OrderCreated>? OrderCreatedEvent { get; }
+    public Event<ProductValidated>? ProductValidatedEvent { get; }
 
-    public OrderStateMachine(ILogger<OrderStateMachine> logger, MediatR.IMediator mediator, IServiceProvider serviceProvider)
+    public OrderStateMachine(ILogger<OrderStateMachine> logger, IServiceProvider serviceProvider)
     {
-        _mediator = mediator;
         _serviceProvider = serviceProvider;
 
         // Mapping the instance state to a property to track state transitions
@@ -35,21 +33,21 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
             When(OrderCreatedEvent)
                 .Then(context =>
                 {
-                    context.Instance.OrderId = context.Data.OrderId;
+                    context.Saga.OrderId = context.Message.OrderId;
 
-                    logger.LogWithOrderAndCorrelationIds("Received OrderCreated event for", context.Data.OrderId, context.Data.CorrelationId);
+                    logger.LogWithOrderAndCorrelationIds("Received OrderCreated event for", context.Message.OrderId, context.Message.CorrelationId);
                     logger.LogInformation("Products check initiated for order {OrderId}, with product ids: {ProductIds}",
-                        context.Data.OrderId, string.Join(", ", context.Data.OrderDetails.Select(od => od.ProductId)));
+                        context.Message.OrderId, string.Join(", ", context.Message.OrderDetails.Select(od => od.ProductId)));
                 })
                 .TransitionTo(ProductRequestedState)
                 .PublishAsync(async context =>
                 {
-                    logger.LogWithOrderAndCorrelationIds("Publishing ProductRequested event for", context.Data.OrderId, context.Instance.CorrelationId);
+                    logger.LogWithOrderAndCorrelationIds("Publishing ProductRequested event for", context.Message.OrderId, context.Saga.CorrelationId);
                     return await context.Init<ProductRequest>(new
                     {
-                        context.Instance.CorrelationId,
-                        context.Data.OrderId,
-                        context.Data.OrderDetails
+                        context.Saga.CorrelationId,
+                        context.Message.OrderId,
+                        context.Message.OrderDetails
                     });
                 })
         );
@@ -58,17 +56,17 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
             When(ProductValidatedEvent)
                 .ThenAsync(async context =>
                 {
-                    logger.LogWithOrderAndCorrelationIds("Received ProductValidated event for", context.Instance.OrderId, context.Instance.CorrelationId);
+                    logger.LogWithOrderAndCorrelationIds("Received ProductValidated event for", context.Saga.OrderId, context.Saga.CorrelationId);
                     logger.LogInformation("Order {OrderId} validated. Valid product ids: {Ids}. Order persistance initiated.",
-                        context.Data.OrderId, string.Join(", ", context.Data.OrderDetails.Select(od => od.ProductId)));
+                        context.Message.OrderId, string.Join(", ", context.Message.OrderDetails.Select(od => od.ProductId)));
 
                     using var scope = _serviceProvider.CreateScope();
                     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
                     var orderReadyForInsert = new InsertOrderCommand
                     {
-                        OrderId = context.Instance.OrderId,
-                        OrderDetails = context.Data.OrderDetails
+                        OrderId = context.Saga.OrderId,
+                        OrderDetails = context.Message.OrderDetails
                     };
 
                     await mediator.Send(orderReadyForInsert);
