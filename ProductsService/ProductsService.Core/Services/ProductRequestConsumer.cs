@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Messaging.MassTransit.Events;
+using Messaging.Logging;
 using Microsoft.Extensions.Logging;
 using ProductsService.Infrastructure.Repositories.Interfaces;
 using OrdersService.Domain.Models;
@@ -20,7 +21,7 @@ namespace ProductsService.Core.Services
         public async Task Consume(ConsumeContext<ProductRequest> context)
         {
             var message = context.Message;
-            _logger.LogInformation("Received ProductRequest for OrderId: {OrderId}, Corr Id: {CorrelationId}", message.OrderId, message.CorrelationId);
+            _logger.LogWithOrderAndCorrelationIds("Received ProductRequest message for", message.OrderId, message.CorrelationId);
 
             var validOrderDetails = new List<OrderDetail>();
 
@@ -33,11 +34,14 @@ namespace ProductsService.Core.Services
                     var validProductQuantities = validOrderDetails.ToDictionary(od => od.ProductId, od => od.Quantity);
 
                     await _productsRepository.UpdateProductQuantitiesAsync(validProductQuantities);
+
+                    _logger.LogInformation("Updated product quantities for order {OrderId}, for product ids: {ProductIds}",
+                        message.OrderId, string.Join(',', validOrderDetails.Select(od => od.ProductId)));
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to process product request.");
+                _logger.LogError(ex, "Failed to process ProductRequest");
             }
 
             await context.Publish(new ProductValidated
@@ -47,7 +51,7 @@ namespace ProductsService.Core.Services
                 OrderDetails = validOrderDetails
             });
 
-            _logger.LogInformation("Published ProductValidated for OrderId: {OrderId}, Corr Id: {CorrelationId}", message.OrderId, message.CorrelationId);
+            _logger.LogWithOrderAndCorrelationIds("Published ProductValidated event for", message.OrderId, message.CorrelationId);
         }
 
         private async Task<List<OrderDetail>> ValidateProductsAsync(IEnumerable<OrderDetail> orderDetails)

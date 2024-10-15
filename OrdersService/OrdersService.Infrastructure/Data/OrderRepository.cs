@@ -44,12 +44,13 @@ public class OrderRepository : IOrderRepository
         try
         {
             string insertOrderSql = @"
-                INSERT INTO ""Orders"" (""CustomerId"", ""TotalPrice"", ""OrderDate"")
-                VALUES (@CustomerId, @TotalPrice, @OrderDate)
+                INSERT INTO ""Orders"" (""Id"", ""CustomerId"", ""TotalPrice"", ""OrderDate"")
+                VALUES (@Id, @CustomerId, @TotalPrice, @OrderDate)
                 RETURNING ""Id"";";
 
             var orderId = await _connection.ExecuteScalarAsync<int>(insertOrderSql, new
             {
+                orderToCreate.Id,
                 orderToCreate.CustomerId,
                 orderToCreate.TotalPrice,
                 orderToCreate.OrderDate
