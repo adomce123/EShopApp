@@ -1,12 +1,11 @@
 ﻿using MediatR;
-using OrdersService.Domain.Models;
+using OrdersService.Application.Orders.Dtos;
 
 namespace OrdersService.Application.Orders.Commands
 {
     public class CreateOrderCommand : IRequest<int>
     {
         public int CustomerId { get; set; }
-        public decimal TotalPrice { get; set; }
-        public IEnumerable<OrderDetail> OrderDetails { get; set; } = Array.Empty<OrderDetail>();
+        public IEnumerable<OrderDetailDto> OrderDetails { get; set; } = Array.Empty<OrderDetailDto>();
     }
 }

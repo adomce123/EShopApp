@@ -57,19 +57,28 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 .ThenAsync(async context =>
                 {
                     logger.LogWithOrderAndCorrelationIds("Received ProductValidated event for", context.Saga.OrderId, context.Saga.CorrelationId);
-                    logger.LogInformation("Order {OrderId} validated. Valid product ids: {Ids}. Order persistance initiated.",
-                        context.Message.OrderId, string.Join(", ", context.Message.OrderDetails.Select(od => od.ProductId)));
 
-                    using var scope = _serviceProvider.CreateScope();
-                    var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-
-                    var orderReadyForInsert = new InsertOrderCommand
+                    if (context.Message.OrderDetails.Any())
                     {
-                        OrderId = context.Saga.OrderId,
-                        OrderDetails = context.Message.OrderDetails
-                    };
+                        logger.LogInformation("Order {OrderId} validated. Valid product ids: {Ids}. Order persistance initiated.",
+                            context.Message.OrderId, string.Join(", ", context.Message.OrderDetails.Select(od => od.ProductId)));
 
-                    await mediator.Send(orderReadyForInsert);
+                        using var scope = _serviceProvider.CreateScope();
+                        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+                        var orderReadyForInsert = new SaveOrderCommand
+                        {
+                            OrderId = context.Saga.OrderId,
+                            OrderDetails = context.Message.OrderDetails
+                        };
+
+                        await mediator.Send(orderReadyForInsert);
+                    }
+                    else
+                    {
+                        logger.LogWithOrderAndCorrelationIds("No valid products received for", context.Saga.OrderId, context.Saga.CorrelationId);
+                    }
+
                 })
                 .TransitionTo(OrderCompletedState)
         );

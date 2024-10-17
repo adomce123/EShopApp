@@ -5,18 +5,18 @@ using OrdersService.Domain.Models;
 
 namespace OrdersService.Application.Orders.Commands
 {
-    public class OrderInsertCommandHandler : IRequestHandler<InsertOrderCommand, Unit>
+    public class SaveOrderCommandHandler : IRequestHandler<SaveOrderCommand, Unit>
     {
-        private readonly ILogger<OrderInsertCommandHandler> _logger;
+        private readonly ILogger<SaveOrderCommandHandler> _logger;
         private readonly IOrderRepository _orderRepository;
 
-        public OrderInsertCommandHandler(ILogger<OrderInsertCommandHandler> logger, IOrderRepository orderRepository)
+        public SaveOrderCommandHandler(ILogger<SaveOrderCommandHandler> logger, IOrderRepository orderRepository)
         {
             _logger = logger;
             _orderRepository = orderRepository;
         }
 
-        public async Task<Unit> Handle(InsertOrderCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(SaveOrderCommand request, CancellationToken cancellationToken)
         {
             var orderToInsert = new Order
             {

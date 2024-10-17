@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using MediatR;
 using Messaging.MassTransit.Events;
+using OrdersService.Domain.Models;
 
 namespace OrdersService.Application.Orders.Commands;
 public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int>
@@ -21,7 +22,13 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int
         {
             CorrelationId = Guid.NewGuid(),
             OrderId = orderId,
-            OrderDetails = command.OrderDetails
+            OrderDetails = command.OrderDetails.Select(od => new OrderDetail
+            {
+                OrderId = orderId,
+                ProductId = od.ProductId,
+                Quantity = od.Quantity,
+                Price = od.Price
+            })
         };
 
         // Publish the OrderCreated event to trigger the saga
