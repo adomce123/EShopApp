@@ -35,14 +35,34 @@ namespace ProductsService.Core.Services
             return createdProductEntity.ToDto();
         }
 
-        public async Task Update(ProductDto productDto)
+        public async Task<bool> Update(int id, ProductDto productDto)
         {
-            await _repository.Update(productDto.ToEntity());
+            var entity = await _repository.GetSingleById(id);
+
+            if (entity != null)
+            {
+                var entityToUpdate = entity.ToUpdateEntity(productDto);
+
+                await _repository.Update(entityToUpdate);
+
+                return true;
+            }
+
+            return false;
         }
 
-        public async Task Delete(ProductDto productDto)
+        public async Task<bool> Delete(int id)
         {
-            await _repository.Delete(productDto.ToEntity());
+            var entity = await _repository.GetSingleById(id);
+
+            if (entity != null)
+            {
+                await _repository.Delete(entity);
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

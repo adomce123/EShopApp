@@ -7,6 +7,6 @@ namespace OrdersService.Application.Orders.Commands
     {
         public int CustomerId { get; set; }
         public int OrderId { get; set; }
-        public IEnumerable<OrderDetail>? OrderDetails { get; set; }
+        public IEnumerable<OrderDetail> OrderDetails { get; set; } = Enumerable.Empty<OrderDetail>();
     }
 }

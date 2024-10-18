@@ -58,12 +58,12 @@ namespace ProductsService.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ProductDto>> DeleteProduct(int id)
         {
-            var product = await _productsService.GetSingleById(id);
+            var result = await _productsService.Delete(id);
 
-            if (product is null)
+            if (!result)
+            {
                 return NotFound();
-
-            await _productsService.Delete(product);
+            }
 
             return NoContent();
         }
@@ -74,14 +74,12 @@ namespace ProductsService.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ProductDto>> UpdateProduct(int id, ProductRequestDto request)
         {
-            var product = await _productsService.GetSingleById(id);
+            var result = await _productsService.Update(id, request.ToDto());
 
-            if (product is null)
+            if (!result)
+            {
                 return NotFound();
-
-            var productToEdit = product.MapFromRequest(request);
-
-            await _productsService.Update(productToEdit);
+            }
 
             return NoContent();
         }

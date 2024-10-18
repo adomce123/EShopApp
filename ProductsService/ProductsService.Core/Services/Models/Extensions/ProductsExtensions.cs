@@ -27,5 +27,15 @@ namespace ProductsService.Core.Services.Models.Extensions
                 StockQuantity = dto.StockQuantity
             };
         }
+
+        internal static Product ToUpdateEntity(this Product entity, ProductDto productDto)
+        {
+            entity.Name = productDto.Name;
+            entity.Description = productDto.Description;
+            entity.Price = productDto.Price;
+            entity.StockQuantity = productDto.StockQuantity;
+
+            return entity;
+        }
     }
 }

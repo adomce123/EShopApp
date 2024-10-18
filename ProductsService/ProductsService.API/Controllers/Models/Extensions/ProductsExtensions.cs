@@ -15,15 +15,5 @@ namespace ProductsService.Controllers.Models.Extensions
                 StockQuantity = request.StockQuantity
             };
         }
-
-        internal static ProductDto MapFromRequest(this ProductDto dtoToEdit, ProductRequestDto request)
-        {
-            dtoToEdit.Name = request.Name;
-            dtoToEdit.Description = request.Description;
-            dtoToEdit.Price = request.Price;
-            dtoToEdit.StockQuantity = request.StockQuantity;
-
-            return dtoToEdit;
-        }
     }
 }

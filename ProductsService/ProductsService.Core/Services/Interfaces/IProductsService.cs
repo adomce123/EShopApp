@@ -7,7 +7,7 @@ namespace ProductsService.Core.Services.Interfaces
         Task<IEnumerable<ProductDto>> GetAll();
         Task<ProductDto?> GetSingleById(int id);
         Task<ProductDto> Create(ProductDto productDto);
-        Task Update(ProductDto productDto);
-        Task Delete(ProductDto productDto);
+        Task<bool> Update(int id, ProductDto productDto);
+        Task<bool> Delete(int id);
     }
 }
