@@ -12,6 +12,17 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
 
+var apiGatewayUrl = configuration["ApiGateway:BaseUrl"] ?? throw new ArgumentException("ApiGatewayUrl not specified");
+services.AddCors(options =>
+{
+    options.AddPolicy("ApiGatewayOnly", policy =>
+    {
+        policy.WithOrigins(apiGatewayUrl)
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var connectionString = configuration.GetConnectionString("OrdersDBConnection") ??
     throw new ArgumentException("Connection string was not specified");
 
@@ -48,6 +59,8 @@ services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseCors("ApiGatewayOnly");
 
 if (app.Environment.IsDevelopment())
 {
