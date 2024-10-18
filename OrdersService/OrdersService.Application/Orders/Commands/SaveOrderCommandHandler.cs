@@ -22,7 +22,7 @@ namespace OrdersService.Application.Orders.Commands
             {
                 Id = request.OrderId,
                 OrderDate = DateTime.Now,
-                TotalPrice = request.OrderDetails.Select(od => od.Price).Sum(),
+                TotalPrice = request.OrderDetails.Select(od => od.Price * od.Quantity).Sum(),
                 OrderDetails = request.OrderDetails,
             };
 
