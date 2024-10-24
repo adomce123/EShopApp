@@ -6,17 +6,17 @@ Orders service:
 * Mediator pattern
 * CQRS pattern
 * PostgreSQL
-- EF Core (for migrations)
-- Dapper (for querying)
+  * EF Core (for migrations)
+  * Dapper (for querying)
 * RabbitMQ
-- MassTransit
-- Saga pattern
-- Redis
+  * MassTransit
+  * Saga pattern
+  * Redis
 
 Products service:
 * Layered architecture
 * MSSQL
-- EF Core
+  * EF Core
 
 API gateway:
 * YARP
