@@ -30,7 +30,7 @@ namespace OrdersService.Application.Orders.Commands
 
             _logger.LogInformation("Order was inserted to database with order id: {Id}", request.OrderId);
 
-            return Unit.Value; // Return Unit instead of an int
+            return Unit.Value;
         }
     }
 }

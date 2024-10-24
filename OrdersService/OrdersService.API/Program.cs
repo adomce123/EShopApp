@@ -13,6 +13,8 @@ var services = builder.Services;
 var configuration = builder.Configuration;
 
 var apiGatewayUrl = configuration["ApiGateway:BaseUrl"] ?? throw new ArgumentException("ApiGatewayUrl not specified");
+var redisHostname = configuration["Redis:Hostname"] ?? throw new ArgumentException("Redis hostname not specified");
+
 services.AddCors(options =>
 {
     options.AddPolicy("ApiGatewayOnly", policy =>
@@ -35,7 +37,7 @@ services.AddMassTransit(x =>
 {
     // Register the OrderStateMachine and its state in the saga
     x.AddSagaStateMachine<OrderStateMachine, OrderState>()
-        .InMemoryRepository(); // Redis can be used
+        .RedisRepository(redisHostname); // Use Redis for state persistance
 
     x.UsingRabbitMq((context, cfg) =>
     {
