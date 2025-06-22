@@ -22,12 +22,13 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int
         {
             CorrelationId = Guid.NewGuid(),
             OrderId = orderId,
+            CustomerId = command.CustomerId,
             OrderDetails = command.OrderDetails.Select(od => new OrderDetail
             {
                 OrderId = orderId,
                 ProductId = od.ProductId,
                 Quantity = od.Quantity,
-                Price = od.Price
+                TotalPrice = od.TotalPrice
             })
         };
 

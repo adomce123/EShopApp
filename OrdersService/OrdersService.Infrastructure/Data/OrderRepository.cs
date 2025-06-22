@@ -56,10 +56,9 @@ public class OrderRepository : IOrderRepository
                 orderToCreate.OrderDate
             }, transaction);
 
-            // Insert OrderDetails
             string insertOrderDetailsSql = @"
-                INSERT INTO ""OrderDetails"" (""OrderId"", ""ProductId"", ""Quantity"", ""Price"")
-                VALUES (@OrderId, @ProductId, @Quantity, @Price);";
+                INSERT INTO ""OrderDetails"" (""OrderId"", ""ProductId"", ""Quantity"", ""TotalPrice"")
+                VALUES (@OrderId, @ProductId, @Quantity, @TotalPrice);";
 
             foreach (var orderDetail in orderToCreate.OrderDetails)
             {
@@ -68,7 +67,7 @@ public class OrderRepository : IOrderRepository
                     orderId,
                     orderDetail.ProductId,
                     orderDetail.Quantity,
-                    orderDetail.Price
+                    orderDetail.TotalPrice
                 }, transaction);
             }
 

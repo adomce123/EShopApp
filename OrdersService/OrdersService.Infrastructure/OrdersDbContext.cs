@@ -32,7 +32,7 @@ namespace OrdersService.Infrastructure
                 .HasKey(od => od.Id);
 
             modelBuilder.Entity<OrderDetail>()
-                .Property(od => od.Price)
+                .Property(od => od.TotalPrice)
                 .HasColumnType("decimal(18,2)");
 
             modelBuilder.Entity<OrderDetail>()
@@ -47,9 +47,9 @@ namespace OrdersService.Infrastructure
             );
 
             modelBuilder.Entity<OrderDetail>().HasData(
-                new OrderDetail { Id = 1, OrderId = 1, ProductId = 1, Quantity = 2, Price = 25.00m },
-                new OrderDetail { Id = 2, OrderId = 1, ProductId = 2, Quantity = 1, Price = 50.00m },
-                new OrderDetail { Id = 3, OrderId = 2, ProductId = 3, Quantity = 3, Price = 50.00m }
+                new OrderDetail { Id = 1, OrderId = 1, ProductId = 1, Quantity = 2, TotalPrice = 25.00m },
+                new OrderDetail { Id = 2, OrderId = 1, ProductId = 2, Quantity = 1, TotalPrice = 50.00m },
+                new OrderDetail { Id = 3, OrderId = 2, ProductId = 3, Quantity = 3, TotalPrice = 50.00m }
             );
         }
     }

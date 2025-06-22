@@ -34,6 +34,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 .Then(context =>
                 {
                     context.Saga.OrderId = context.Message.OrderId;
+                    context.Saga.CustomerId = context.Message.CustomerId;
 
                     logger.LogWithOrderAndCorrelationIds("Received OrderCreated event for", context.Message.OrderId, context.Message.CorrelationId);
                     logger.LogInformation("Products check initiated for order {OrderId}, with product ids: {ProductIds}",
@@ -69,6 +70,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                         var orderReadyForInsert = new SaveOrderCommand
                         {
                             OrderId = context.Saga.OrderId,
+                            CustomerId = context.Saga.CustomerId,
                             OrderDetails = context.Message.OrderDetails
                         };
 
