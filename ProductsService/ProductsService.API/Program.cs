@@ -22,8 +22,13 @@ services.AddCors(options =>
     });
 });
 
-var connectionString = configuration.GetConnectionString("ProductsServiceDb") ??
-    throw new ArgumentException("Connection string was not specified");
+var sqlUser = Environment.GetEnvironmentVariable("SQL_USER");
+var sqlPassword = Environment.GetEnvironmentVariable("SQL_PASSWORD");
+
+var connectionTemplate = builder.Configuration.GetConnectionString("ProductsServiceDb");
+var connectionString = connectionTemplate
+    .Replace("{UserId}", sqlUser)
+    .Replace("{Password}", sqlPassword);
 
 services.AddDbContext<ProductsDbContext>(
     opt => opt.UseSqlServer(connectionString));
