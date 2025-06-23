@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using OrdersService.API.Validators;
 using OrdersService.Application.Orders.Commands;
 using OrdersService.Application.Orders.Queries;
 
@@ -6,6 +7,13 @@ namespace OrdersService.API.Endpoints
 {
     public class OrdersEndpoints
     {
+        private readonly IOrderValidator _orderValidator;
+
+        public OrdersEndpoints(IOrderValidator orderValidator)
+        {
+            _orderValidator = orderValidator;
+        }
+
         public void MapEndpoints(IEndpointRouteBuilder app)
         {
             app.MapGet("/orders", async (IMediator mediator, HttpContext context) =>
@@ -17,10 +25,9 @@ namespace OrdersService.API.Endpoints
 
             app.MapPost("/orders", async (CreateOrderCommand command, IMediator mediator, HttpContext context) =>
             {
-                if (command == null)
-                {
-                    return Results.BadRequest("Invalid order data.");
-                }
+                var validationError = _orderValidator.ValidateOrderCommand(command);
+                if (validationError != null)
+                    return Results.BadRequest(validationError);
 
                 var orderId = await mediator.Send(command, context.RequestAborted);
                 return Results.Created($"/orders/{orderId}", new { OrderId = orderId });

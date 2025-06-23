@@ -2,6 +2,7 @@ using MassTransit;
 using Messaging.MassTransit.States;
 using Microsoft.EntityFrameworkCore;
 using OrdersService.API.Endpoints;
+using OrdersService.API.Validators;
 using OrdersService.Application.Orders.Interfaces;
 using OrdersService.Application.Orders.Queries;
 using OrdersService.Application.Orders.StateMachines;
@@ -55,6 +56,7 @@ services.AddMassTransit(x =>
 });
 
 services.AddSingleton<OrdersEndpoints>();
+services.AddSingleton<IOrderValidator, OrderValidator>();
 services.AddScoped<IOrderRepository, OrderRepository>();
 
 services.AddEndpointsApiExplorer();
