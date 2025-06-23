@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using OrdersService.API.Validators;
 using OrdersService.Application.Orders.Commands;
+using OrdersService.Application.Orders.Interfaces;
 using OrdersService.Application.Orders.Queries;
 
 namespace OrdersService.API.Endpoints

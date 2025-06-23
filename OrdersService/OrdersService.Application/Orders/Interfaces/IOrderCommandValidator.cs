@@ -1,6 +1,6 @@
 ﻿using OrdersService.Application.Orders.Commands;
 
-namespace OrdersService.API.Validators
+namespace OrdersService.Application.Orders.Interfaces
 {
     public interface IOrderValidator
     {

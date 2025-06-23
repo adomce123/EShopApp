@@ -1,8 +1,9 @@
 ﻿using OrdersService.Application.Orders.Commands;
+using OrdersService.Application.Orders.Interfaces;
 
 namespace OrdersService.API.Validators
 {
-    public class OrderValidator : IOrderValidator
+    public class OrderCommandValidator : IOrderCommandValidator
     {
         public string? ValidateOrderCommand(CreateOrderCommand command)
         {
