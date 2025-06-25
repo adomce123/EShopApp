@@ -35,17 +35,17 @@ services.AddDbContext<ProductsDbContext>(
 
 services.AddMassTransit(x =>
 {
-    x.AddConsumer<ProductsValidationConsumer>(); // Register the consumer for ProductRequest
+    x.AddConsumer<ProductsValidationConsumer>();
 
-    x.UsingRabbitMq((context, cfg) =>
+    x.UsingAzureServiceBus((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
-        {
-            h.Username("guest");
-            h.Password("guest");
-        });
-        // ProductService listens to the product-service-requests queue for ProductRequest messages
-        cfg.ReceiveEndpoint("product-service-requests", e =>
+        var configuration = context.GetRequiredService<IConfiguration>();
+        var connectionString = configuration["AzureServiceBus:ConnectionString"];
+        var receiveQueue = configuration["AzureServiceBus:ReceiveQueue"];
+
+        cfg.Host(connectionString);
+
+        cfg.ReceiveEndpoint(receiveQueue!, e =>
         {
             e.ConfigureConsumer<ProductsValidationConsumer>(context);
         });

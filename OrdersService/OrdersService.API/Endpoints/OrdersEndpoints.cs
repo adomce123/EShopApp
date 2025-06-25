@@ -7,9 +7,9 @@ namespace OrdersService.API.Endpoints
 {
     public class OrdersEndpoints
     {
-        private readonly IOrderValidator _orderValidator;
+        private readonly IOrderCommandValidator _orderValidator;
 
-        public OrdersEndpoints(IOrderValidator orderValidator)
+        public OrdersEndpoints(IOrderCommandValidator orderValidator)
         {
             _orderValidator = orderValidator;
         }

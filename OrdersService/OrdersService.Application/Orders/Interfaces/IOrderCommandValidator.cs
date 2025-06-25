@@ -2,7 +2,7 @@
 
 namespace OrdersService.Application.Orders.Interfaces
 {
-    public interface IOrderValidator
+    public interface IOrderCommandValidator
     {
         string? ValidateOrderCommand(CreateOrderCommand command);
     }

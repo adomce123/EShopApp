@@ -40,23 +40,23 @@ services.AddMassTransit(x =>
     x.AddSagaStateMachine<OrderStateMachine, OrderState>()
         .RedisRepository(redisHostname); // Use Redis for state persistance
 
-    x.UsingRabbitMq((context, cfg) =>
+    x.UsingAzureServiceBus((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        var configuration = context.GetRequiredService<IConfiguration>();
+        var connectionString = configuration["AzureServiceBus:ConnectionString"];
+        var receiveQueue = configuration["AzureServiceBus:ReceiveQueue"];
+
+        cfg.Host(connectionString);
+
+        cfg.ReceiveEndpoint(receiveQueue!, e =>
         {
-            h.Username("guest");
-            h.Password("guest");
-        });
-        // Receive endpoint for the saga, listens for saga-related messages (like ProductValidated)
-        cfg.ReceiveEndpoint("ordersQueue", e =>
-        {
-            e.ConfigureSaga<OrderState>(context);  // This will handle ProductValidated and other events related to the saga
+            e.ConfigureSaga<OrderState>(context);
         });
     });
 });
 
 services.AddSingleton<OrdersEndpoints>();
-services.AddSingleton<IOrderValidator, OrderValidator>();
+services.AddSingleton<IOrderCommandValidator, OrderCommandValidator>();
 services.AddScoped<IOrderRepository, OrderRepository>();
 
 services.AddEndpointsApiExplorer();
